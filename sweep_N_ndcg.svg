@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560">
+  <rect x="0" y="0" width="900" height="560" fill="white" />
+  <text x="450.0" y="34" text-anchor="middle" font-size="24" font-family="Arial">Hyperparameter Sweep: nDCG@10 vs N</text>
+  <line x1="90" y1="480.0" x2="860" y2="480.0" stroke="#ddd" stroke-dasharray="4,4" /><text x="80" y="484.0" text-anchor="end" font-size="14" fill="#444">0.347</text><line x1="90" y1="396.0" x2="860" y2="396.0" stroke="#ddd" stroke-dasharray="4,4" /><text x="80" y="400.0" text-anchor="end" font-size="14" fill="#444">0.386</text><line x1="90" y1="312.0" x2="860" y2="312.0" stroke="#ddd" stroke-dasharray="4,4" /><text x="80" y="316.0" text-anchor="end" font-size="14" fill="#444">0.425</text><line x1="90" y1="228.0" x2="860" y2="228.0" stroke="#ddd" stroke-dasharray="4,4" /><text x="80" y="232.0" text-anchor="end" font-size="14" fill="#444">0.464</text><line x1="90" y1="144.0" x2="860" y2="144.0" stroke="#ddd" stroke-dasharray="4,4" /><text x="80" y="148.0" text-anchor="end" font-size="14" fill="#444">0.503</text><line x1="90" y1="60.0" x2="860" y2="60.0" stroke="#ddd" stroke-dasharray="4,4" /><text x="80" y="64.0" text-anchor="end" font-size="14" fill="#444">0.542</text>
+  <line x1="90.0" y1="60" x2="90.0" y2="480" stroke="#eee" /><text x="90.0" y="504" text-anchor="middle" font-size="14" fill="#444">0</text><line x1="167.0" y1="60" x2="167.0" y2="480" stroke="#eee" /><text x="167.0" y="504" text-anchor="middle" font-size="14" fill="#444">2</text><line x1="282.5" y1="60" x2="282.5" y2="480" stroke="#eee" /><text x="282.5" y="504" text-anchor="middle" font-size="14" fill="#444">5</text><line x1="398.0" y1="60" x2="398.0" y2="480" stroke="#eee" /><text x="398.0" y="504" text-anchor="middle" font-size="14" fill="#444">8</text><line x1="475.0" y1="60" x2="475.0" y2="480" stroke="#eee" /><text x="475.0" y="504" text-anchor="middle" font-size="14" fill="#444">10</text><line x1="667.5" y1="60" x2="667.5" y2="480" stroke="#eee" /><text x="667.5" y="504" text-anchor="middle" font-size="14" fill="#444">15</text><line x1="860.0" y1="60" x2="860.0" y2="480" stroke="#eee" /><text x="860.0" y="504" text-anchor="middle" font-size="14" fill="#444">20</text>
+  <line x1="90" y1="480" x2="860" y2="480" stroke="#333" stroke-width="2" />
+  <line x1="90" y1="60" x2="90" y2="480" stroke="#333" stroke-width="2" />
+  <polyline fill="none" stroke="#1f77b4" stroke-width="3" points="90.0,168.8 167.0,170.9 282.5,108.5 398.0,110.6 475.0,114.9 667.5,125.7" />
+<circle cx="90.0" cy="168.8" r="5" fill="#1f77b4" />
+<circle cx="167.0" cy="170.9" r="5" fill="#1f77b4" />
+<circle cx="282.5" cy="108.5" r="5" fill="#1f77b4" />
+<circle cx="398.0" cy="110.6" r="5" fill="#1f77b4" />
+<circle cx="475.0" cy="114.9" r="5" fill="#1f77b4" />
+<circle cx="667.5" cy="125.7" r="5" fill="#1f77b4" />
+  <polyline fill="none" stroke="#d62728" stroke-width="3" points="90.0,429.4 167.0,431.5 282.5,425.1 475.0,416.5 667.5,418.6 860.0,420.8" />
+<circle cx="90.0" cy="429.4" r="5" fill="#d62728" />
+<circle cx="167.0" cy="431.5" r="5" fill="#d62728" />
+<circle cx="282.5" cy="425.1" r="5" fill="#d62728" />
+<circle cx="475.0" cy="416.5" r="5" fill="#d62728" />
+<circle cx="667.5" cy="418.6" r="5" fill="#d62728" />
+<circle cx="860.0" cy="420.8" r="5" fill="#d62728" />
+  <text x="450.0" y="540" text-anchor="middle" font-size="18" font-family="Arial">N (Short-term length)</text>
+  <text x="24" y="280.0" transform="rotate(-90,24,280.0)" text-anchor="middle" font-size="18" font-family="Arial">nDCG@10</text>
+  <rect x="620" y="70" width="14" height="14" fill="#1f77b4" /><text x="640" y="82" font-size="14">FSQ-NYC (fix M=40)</text>
+  <rect x="620" y="96" width="14" height="14" fill="#d62728" /><text x="640" y="108" font-size="14">FSQ-TKY (fix M=80)</text>
+</svg>
