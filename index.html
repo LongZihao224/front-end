@@ -107,6 +107,8 @@
     .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .notice { padding: 8px 10px; border-radius: 8px; background: #e9f8ef; border: 1px solid #c0e8ce; color: #17663a; margin-bottom: 10px; }
     .rec-card { border: 1px solid var(--line); border-radius: 8px; padding: 8px; margin-bottom: 8px; }
+    .rec-select { width: 100%; text-align: left; background: #fff; }
+    .rec-select.active { border-color: var(--primary); background: var(--primary-soft); }
     .collapse { background: #fafcff; border: 1px dashed #b9c8e9; border-radius: 8px; padding: 10px; }
     .login-wrap { max-width: 860px; margin: 26px auto; }
     .mini { font-size: 12px; color: var(--muted); }
@@ -209,6 +211,7 @@ const data = {
   ],
   checkins: [],
   recs: [],
+  feedbacks: [],
   logs: []
 };
 
@@ -233,6 +236,10 @@ function seed() {
       rec.time = new Date(Date.now()-((r+1)*43200000)).toISOString().slice(0,19).replace('T',' ');
       data.recs.push(rec);
     }
+  });
+  data.feedbacks.push({
+    fb_id: rid('FB'), rec_id: data.recs[0]?.rec_id, uid: 2, poi_id: 1, poi_name: '第一食堂',
+    action: '喜欢', content: '推荐挺准，午饭时段命中率高。', time: now()
   });
 }
 
@@ -400,11 +407,41 @@ function runRec() {
   const useTime = document.getElementById('rtime').value==='true';
   const useCat = document.getElementById('rcat').value==='true';
   const rec = generateRec(currentUser.id,k,useTime,useCat);
-  const html = `<div><h3>Top-${k} 推荐结果</h3>${rec.topk.map((x,i)=>`<div class="rec-card">${i+1}. <b>${x.name}</b>（${x.cat}）<span class="muted"> 置信度 ${(x.score*100).toFixed(1)}%</span></div>`).join('')}
+  const html = `<div><h3>Top-${k} 推荐结果</h3><p class="mini">点击某条推荐后可提交反馈，管理端可实时查看。</p>${rec.topk.map((x,i)=>`<button class="rec-card rec-select" id="recPoi-${x.id}" onclick="selectRecPoi('${rec.rec_id}',${x.id})">${i+1}. <b>${x.name}</b>（${x.cat}）<span class="muted"> 置信度 ${(x.score*100).toFixed(1)}%</span></button>`).join('')}
+  <div id="feedbackPanel" class="card" style="margin-top:8px;background:#fffdf7">请选择一条推荐结果后填写反馈。</div>
   <details class="collapse"><summary>推荐解释（可选）</summary><p>${rec.explain.long}</p><p>${rec.explain.short}</p></details>
   <div class="card" style="margin-top:8px;background:#f9fcff"><b>本次推理信息：</b><br>请求ID：${rec.request_id} ｜ 模型类型：${rec.model_type} ｜ 模型版本：${rec.model_version} ｜ 耗时：${rec.cost} ms ｜ 状态：${rec.status}</div></div>`;
   document.getElementById('recResult').innerHTML = html;
   toast('userNotice','推荐生成成功，历史记录已写入。');
+}
+
+function selectRecPoi(recId, poiId) {
+  document.querySelectorAll('.rec-select').forEach(el=>el.classList.remove('active'));
+  const active = document.getElementById(`recPoi-${poiId}`);
+  if (active) active.classList.add('active');
+  const rec = data.recs.find(r=>r.rec_id===recId);
+  const poi = rec?.topk.find(x=>x.id===poiId);
+  if (!rec || !poi) return;
+  const his = data.feedbacks.filter(f=>f.rec_id===recId&&f.poi_id===poiId&&f.uid===currentUser.id);
+  document.getElementById('feedbackPanel').innerHTML = `<h3 style="margin-top:0">反馈推荐结果：${poi.name}</h3>
+    <div class="row">
+      <div><label>反馈类型</label><select id="fbAction"><option value="喜欢">喜欢</option><option value="不喜欢">不喜欢</option><option value="已到访">已到访</option></select></div>
+      <div><label>文字反馈（可选）</label><input id="fbContent" placeholder="例如：和当前出行意图不符"></div>
+    </div>
+    <div style="margin-top:10px"><button class="primary" onclick="submitFeedback('${recId}',${poiId})">提交反馈</button></div>
+    <div class="mini" style="margin-top:8px">当前推荐已提交反馈 ${his.length} 次。</div>`;
+}
+
+function submitFeedback(recId, poiId) {
+  const action = document.getElementById('fbAction')?.value;
+  const content = document.getElementById('fbContent')?.value.trim() || '-';
+  const rec = data.recs.find(r=>r.rec_id===recId);
+  const poi = rec?.topk.find(x=>x.id===poiId);
+  if (!rec || !poi) return toast('userNotice','反馈失败：未找到推荐结果。');
+  data.feedbacks.unshift({ fb_id: rid('FB'), rec_id: recId, uid: currentUser.id, poi_id: poiId, poi_name: poi.name, action, content, time: now() });
+  log('/api/feedback','POST',currentUser.id,18,200,'');
+  toast('userNotice','反馈提交成功，管理端可在“反馈管理”中查看。');
+  selectRecPoi(recId, poiId);
 }
 
 function userLogin() {
@@ -434,7 +471,7 @@ function registerUser() {
 function logoutUser(){ currentUser=null; document.getElementById('userApp').classList.add('hidden'); document.getElementById('userAuth').classList.remove('hidden'); }
 
 function buildAdminNav() {
-  const items=['仪表盘','用户管理','POI管理','类别管理','模型管理','系统配置','接口日志','推荐记录'];
+  const items=['仪表盘','用户管理','POI管理','类别管理','模型管理','系统配置','接口日志','推荐记录','反馈管理'];
   document.getElementById('adminNav').innerHTML = items.map(i=>`<button class="${adminTab===i?'active-tab':''}" onclick="adminTab='${i}';renderAdmin()">${i}</button>`).join('') + `<hr><button onclick="logoutAdmin()">退出后台</button>`;
 }
 
@@ -480,7 +517,12 @@ function renderAdmin() {
     v.innerHTML = `<div class="card"><h2>接口日志</h2><div class="mini">支持时间范围、接口路径、状态码筛选（演示版展示全量日志）。</div><table><thead><tr><th>时间</th><th>接口路径</th><th>方法</th><th>用户ID</th><th>耗时(ms)</th><th>状态码</th><th>错误信息</th></tr></thead><tbody>${data.logs.map(l=>`<tr><td>${l.time}</td><td>${l.path}</td><td>${l.method}</td><td>${l.uid||'-'}</td><td>${l.cost}</td><td>${l.code}</td><td>${l.err||'-'}</td></tr>`).join('')}</tbody></table></div>`;
   }
   if (adminTab==='推荐记录') {
-    v.innerHTML = `<div class="card"><h2>推荐记录</h2><table><thead><tr><th>rec_id</th><th>用户ID</th><th>时间</th><th>k</th><th>Top-1 POI</th><th>模型类型</th><th>模型版本</th><th>耗时</th><th>状态</th><th>操作</th></tr></thead><tbody>${data.recs.map(r=>`<tr><td>${r.rec_id}</td><td>${r.uid}</td><td>${r.time}</td><td>${r.k}</td><td>${r.top1}</td><td>${r.model_type}</td><td>${r.model_version}</td><td>${r.cost}ms</td><td>${r.status}</td><td><button onclick="adminRecDetail('${r.rec_id}')">详情</button></td></tr>`).join('')}</tbody></table><div id="adminRec"></div></div>`;
+    v.innerHTML = `<div class="card"><h2>推荐记录</h2><table><thead><tr><th>rec_id</th><th>用户ID</th><th>时间</th><th>k</th><th>Top-1 POI</th><th>模型类型</th><th>模型版本</th><th>反馈数</th><th>耗时</th><th>状态</th><th>操作</th></tr></thead><tbody>${data.recs.map(r=>`<tr><td>${r.rec_id}</td><td>${r.uid}</td><td>${r.time}</td><td>${r.k}</td><td>${r.top1}</td><td>${r.model_type}</td><td>${r.model_version}</td><td>${data.feedbacks.filter(f=>f.rec_id===r.rec_id).length}</td><td>${r.cost}ms</td><td>${r.status}</td><td><button onclick="adminRecDetail('${r.rec_id}')">详情</button></td></tr>`).join('')}</tbody></table><div id="adminRec"></div></div>`;
+  }
+  if (adminTab==='反馈管理') {
+    v.innerHTML = `<div class="card"><h2>反馈管理</h2><div class="mini">用于查看用户对推荐结果的点击反馈，支持后续用于模型优化与规则修正（演示版展示全量数据）。</div>
+    <table><thead><tr><th>feedback_id</th><th>时间</th><th>用户ID</th><th>rec_id</th><th>POI</th><th>反馈类型</th><th>反馈内容</th></tr></thead>
+    <tbody>${data.feedbacks.map(f=>`<tr><td>${f.fb_id}</td><td>${f.time}</td><td>${f.uid}</td><td>${f.rec_id}</td><td>${f.poi_name}</td><td>${f.action}</td><td>${f.content}</td></tr>`).join('') || '<tr><td colspan="7">暂无反馈数据</td></tr>'}</tbody></table></div>`;
   }
 }
 function adminRecDetail(id){
